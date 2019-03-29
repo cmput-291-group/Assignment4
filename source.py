@@ -178,7 +178,7 @@ class UI:
             tk.messagebox.showerror("Error", "Invalid input given")
 
     def buildQ3Menu(self):
-        # builds Q4 menu UI
+        # builds Q3 menu UI
 
         # clear window
         self.clearRoot()
