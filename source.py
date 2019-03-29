@@ -7,10 +7,10 @@ import webbrowser
 
 
 class UI:
-    def __init__(self,root):
+    def __init__(self,root,path):
         # init all instance attributes
         
-        self.db = Database()
+        self.db = Database(path)
         # get GUI root
         self.win = root
         self.win.title("Crime Stats")
@@ -310,7 +310,7 @@ class UI:
                 folium.Circle(
                     location=[lat,long],
                     popup="{} <br> {} <br> {}".format(name,commonCrime,ratio),
-                    radius=3000*ratio,
+                    radius=1000*ratio,
                     fill=True,
                     fill_color="crimson"
                 ).add_to(m)
@@ -329,10 +329,10 @@ class UI:
     
     
 class Database:
-    def __init__(self):
+    def __init__(self,path):
         # init instance variables for database usage
         
-        self.db_path = 'a4-sampled.db'
+        self.db_path = path
         self.connection = sqlite3.connect(self.db_path)
         self.cursor = self.connection.cursor()        
 
@@ -342,10 +342,10 @@ class Database:
         # lower is the lower bound year
         # upper is the upper bound year
         
-        query = '''SELECT Month,Count(CASE WHEN Crime_Type = '{}' THEN 1 ELSE NULL END) as number
+        query = '''SELECT Month,SUM(Incidents_Count) as number
                    FROM crime_incidents
-                   WHERE Year <= {} AND Year >= {}
-                   GROUP BY Month'''.format(crimeType,upper,lower)
+                   WHERE Year <= {} AND Year >= {} AND Crime_Type = '{}'
+                   GROUP BY Month'''.format(upper,lower,crimeType)
         
         result = pd.read_sql_query(query,self.connection)
         return result
@@ -431,7 +431,7 @@ class Database:
         query = '''SELECT name1, (crimeNum*1.0/popNum) as ratio, c.longitude as long,
                    c.latitude as lat
                    FROM (
-                         SELECT Neighbourhood_Name as name1, COUNT(*) as crimeNum
+                         SELECT Neighbourhood_Name as name1, SUM(Incidents_Count) as crimeNum
                          FROM crime_incidents
                          WHERE Year <= {} AND Year >= {}
                          GROUP BY Neighbourhood_Name),
@@ -457,7 +457,7 @@ class Database:
         
         query = '''SELECT name,cType,num
                    FROM(
-                        SELECT Neighbourhood_Name as name,Crime_Type as cType, COUNT(Crime_Type) as num
+                        SELECT Neighbourhood_Name as name,Crime_Type as cType, SUM(Incidents_Count) as num
                         FROM crime_incidents
                         WHERE name = '{}' AND Year <= {} AND Year >= {}
                         GROUP BY name,Crime_Type)
@@ -468,11 +468,12 @@ class Database:
         
 
 if __name__ == "__main__":
+    path = input("Enter Database Name: ")
     # get tkinter window root
     root = tk.Tk()
     # set default window size
     root.geometry('500x500')
     # pass root UI and run
-    ui = UI(root)
+    ui = UI(root,path)
     ui.run()
     root.mainloop()
