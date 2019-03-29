@@ -208,7 +208,7 @@ class UI:
     def getQ3Entries(self):
         # get the user input then render and output the map
 
-        #try:
+        try:
             # get user input
             lower = int(self.Q3LowerText.get())
             upper = int(self.Q3UpperText.get())
@@ -252,8 +252,8 @@ class UI:
             # return to main menu
             self.buildMainMenu()
 
-        #except ValueError:
-            #tk.messagebox.showerror("Error", "Invalid input given")
+        except ValueError:
+            tk.messagebox.showerror("Error", "Invalid input given")
 
     def buildQ4Menu(self):
         # builds Q4 menu UI
